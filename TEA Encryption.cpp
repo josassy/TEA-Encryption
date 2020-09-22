@@ -5,11 +5,6 @@
 const int KEY_SIZE = 4;
 int main()
 {
-    std::ifstream cipherFile;
-    std::string fileName;
-    std::cout << "enter filename to decrypt: ";
-    std::cin >> fileName;
-
     std::ifstream keyFile;
     std::string line;
     keyFile.open("teacher-H.key");
@@ -25,24 +20,42 @@ int main()
 
     // split 128-bit key into 4 integers
     unsigned int K[KEY_SIZE];
-    for (int i = 0; i < KEY_SIZE; i++) {
-        std::string substring = line.substr(i * 8, 8);
-        K[i] = std::stoul(substring, nullptr, 16);
-     
-        // test to see if integer was read in correctly:
-        //printf("\n%X", K[i]);
-    }
+    hexStrToIntArray(line, K, KEY_SIZE);
 
     // read in ciphertext
+    std::ifstream cipherFile;
+    std::string fileName;
+    std::cout << "enter filename to decrypt: ";
+    std::cin >> fileName;
+
     cipherFile.open(fileName);
     if (!cipherFile.is_open()) {
         std::cout << "Unable to open cipher file.";
         return 1;
     }
 
+    // for now, assume that ciphertext is also hex.
+    while (cipherFile.good()) {
+        getline(cipherFile, line);
 
-        
+    }
+
+
+
+    unsigned int CIPHER[2];
+    hexStrToIntArray()
 }
+
+/**
+ * Convert hex string into int array of specified size.
+ */
+void hexStrToIntArray(std::string str, unsigned int K[], int arraySize) {
+    for (int i = 0; i < arraySize; i++) {
+        std::string substring = str.substr(i * 8, 8);
+        K[i] = std::stoul(substring, nullptr, 16);
+    }
+}
+
 
 std::string decrypt(int L, int R, unsigned int K[KEY_SIZE]) {
     return "";
