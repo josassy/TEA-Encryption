@@ -56,26 +56,25 @@ void hexStrToIntArray(std::string str, unsigned int K[], int arraySize) {
     }
 }
 
-
 std::string decrypt(int L, int R, unsigned int K[KEY_SIZE]) {
     return "";
 }
 
+    return std::make_pair(L, R);
+}
 
-/*
-Decryption:
-Assuming 32 rounds:
-(K[0], K[1], K[2], K[3]) = 128 bit key
-(L, R) = ciphertext(64 - bit block)
-delta = 0x9e3779b9
-sum = delta << 5
-for i = 1 to 32     
-  R -= ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3])
-  L -= ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]) 
-  sum -= delta
-next i
-plaintext = (L, R)
-*/
+std::pair <int, int> encrypt(int L, int R, unsigned int K[KEY_SIZE]) {
+    int delta = 0x9e3779b9;
+    int sum = 0;
+
+    for (int i = 0; i < 32; ++i) {
+        sum += delta;
+        L += ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]);
+        R += ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3]);
+    }
+
+    return std::make_pair(L, R);
+}
 
 
 /*
@@ -93,3 +92,18 @@ next i
 ciphertext = (L,R)
 */
 
+
+/*
+Decryption:
+Assuming 32 rounds:
+(K[0], K[1], K[2], K[3]) = 128 bit key
+(L, R) = ciphertext(64 - bit block)
+delta = 0x9e3779b9
+sum = delta << 5
+for i = 1 to 32
+  R -= ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3])
+  L -= ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1])
+  sum -= delta
+next i
+plaintext = (L, R)
+*/
