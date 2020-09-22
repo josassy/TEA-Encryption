@@ -19,4 +19,42 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Ciphertexts\mystery1_ECB-H.crypt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Ciphertexts\mystery2_ECB-S.crypt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Ciphertexts\mystery3_CBC-S.crypt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Ciphertexts\mystery4_CTR-S.crypt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Practice\practice_ECB-H.crypt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Practice\practice_ECB-H.plain">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Practice\practice_ECB-S.crypt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Practice\practice_ECB-S.plain">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="teacher-H.iv">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="teacher-H.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="theme-H.iv">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="theme-H.key">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
