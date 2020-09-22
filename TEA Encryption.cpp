@@ -38,12 +38,19 @@ int main()
     while (cipherFile.good()) {
         getline(cipherFile, line);
 
+        for (int i = 0; i < line.length() / 8; i++) {
+            unsigned int CIPHER[2];
+            // convert substring to int pair
+            hexStrToIntArray(line.substr(i * 8, 16), CIPHER, 2);
+            // decrypt int pair
+            auto decryptedPair = decrypt(CIPHER[0], CIPHER[1], K);
+
+
+        }
     }
 
 
 
-    unsigned int CIPHER[2];
-    hexStrToIntArray()
 }
 
 /**
