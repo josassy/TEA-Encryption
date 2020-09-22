@@ -56,5 +56,14 @@
     <None Include="theme-H.key">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Help Program Examples\Convert.java">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Help Program Examples\Overflow.java">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Help Program Examples\Shift.java">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

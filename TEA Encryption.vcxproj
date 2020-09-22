@@ -146,6 +146,9 @@
     <None Include="Ciphertexts\mystery2_ECB-S.crypt" />
     <None Include="Ciphertexts\mystery3_CBC-S.crypt" />
     <None Include="Ciphertexts\mystery4_CTR-S.crypt" />
+    <None Include="Help Program Examples\Convert.java" />
+    <None Include="Help Program Examples\Overflow.java" />
+    <None Include="Help Program Examples\Shift.java" />
     <None Include="Practice\practice_ECB-H.crypt" />
     <None Include="Practice\practice_ECB-H.plain" />
     <None Include="Practice\practice_ECB-S.crypt" />
