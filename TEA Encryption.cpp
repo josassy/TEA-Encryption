@@ -56,9 +56,15 @@ void hexStrToIntArray(std::string str, unsigned int K[], int arraySize) {
     }
 }
 
-std::string decrypt(int L, int R, unsigned int K[KEY_SIZE]) {
-    return "";
-}
+std::pair <int, int> decrypt(int L, int R, unsigned int K[KEY_SIZE]) {
+    int delta = 0x9e3779b9;
+    int sum = delta << 5;
+
+    for (int i = 0; i < 32; ++i) {
+        R -= ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3]);
+        L -= ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]);
+        sum -= delta;
+    }
 
     return std::make_pair(L, R);
 }
