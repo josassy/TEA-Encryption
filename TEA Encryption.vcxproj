@@ -162,6 +162,7 @@
     <None Include="teacher-H.key" />
     <None Include="theme-H.iv" />
     <None Include="theme-H.key" />
+    <None Include="theme_CBC-S.plain" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

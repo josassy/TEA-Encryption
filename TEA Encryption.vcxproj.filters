@@ -69,5 +69,6 @@
     <None Include="Plaintexts\mystery2_ECB-S.plain" />
     <None Include="Plaintexts\mystery3_CBC-S.plain" />
     <None Include="Plaintexts\mystery4_CTR-S.plain" />
+    <None Include="theme_CBC-S.plain" />
   </ItemGroup>
 </Project>

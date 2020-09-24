@@ -27,7 +27,8 @@ int main()
 {
     std::ifstream keyFile;
     std::string line;
-    keyFile.open("teacher-H.key");
+    //keyFile.open("teacher-H.key");
+    keyFile.open("theme-H.key");
     if (keyFile.is_open()) {
         getline(keyFile, line);
     }
@@ -41,7 +42,8 @@ int main()
     unsigned int K[KEY_SIZE];
     hexStrToIntArray(line, K, KEY_SIZE);
 
-    keyFile.open("teacher-H.iv");
+    //keyFile.open("teacher-H.iv");
+    keyFile.open("theme-H.iv");
     if (keyFile.is_open()) {
         getline(keyFile, line);
     }
@@ -76,8 +78,8 @@ int main()
     // read in ciphertext
     std::ifstream cipherFile;
     std::string fileName;
-    std::cout << "enter filename to " << (encryptMode ? "encrypt" : "decrypt") << ": ";
-    getline(std::cin, fileName);
+    //std::cout << "enter filename to " << (encryptMode ? "encrypt" : "decrypt") << ": ";
+    //getline(std::cin, fileName);
     //fileName = "Practice/practice_ECB-H.crypt";
     //fileName = "Practice/practice_ECB-S.crypt";
     //fileName = "Ciphertexts/mystery1_ECB-H.crypt";
@@ -86,6 +88,8 @@ int main()
     //fileName = "Ciphertexts/mystery4_CTR-S.crypt";
     //fileName = "Practice/practice_ECB-S.plain";
     //fileName = "mystery3_CBC-S.plain";
+    //fileName = "theme_CBC-S.plain";
+    fileName = "theme_CBC-S.crypt";
 
     // retrieve cipherFile base name.
     std::string baseName = getBaseName(fileName);
@@ -221,7 +225,7 @@ void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
 
         std::pair<unsigned int, unsigned int> decryptedPair = { 0, 0 };
         if (encryptMode) {
-            decryptedPair = decrypt(L ^ additive.first, R ^ additive.second, K);
+            decryptedPair = encrypt(L ^ additive.first, R ^ additive.second, K);
         }
         else {
             decryptedPair = decrypt(L, R, K);
