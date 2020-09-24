@@ -1,4 +1,3 @@
-//#include <winsock2.h>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -18,7 +17,6 @@ void hexStrToIntArray(std::string str, unsigned int K[], int arraySize);
 std::string toHexString(std::pair<unsigned int, unsigned int> data);
 std::string toAsciiString(std::pair<unsigned int, unsigned int> data);
 std::string getBaseName(std::string fileName);
-unsigned int reverseBits(unsigned int num);
 
 std::pair <unsigned int, unsigned int> decrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]);
 std::pair <unsigned int, unsigned int> encrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]);
@@ -80,16 +78,6 @@ int main()
     std::string fileName;
     std::cout << "enter filename to " << (encryptMode ? "encrypt" : "decrypt") << ": ";
     getline(std::cin, fileName);
-    //fileName = "Practice/practice_ECB-H.crypt";
-    //fileName = "Practice/practice_ECB-S.crypt";
-    //fileName = "Ciphertexts/mystery1_ECB-H.crypt";
-    //fileName = "Ciphertexts/mystery2_ECB-S.crypt";
-    //fileName = "Ciphertexts/mystery3_CBC-S.crypt";
-    //fileName = "Ciphertexts/mystery4_CTR-S.crypt";
-    //fileName = "Practice/practice_ECB-S.plain";
-    //fileName = "mystery3_CBC-S.plain";
-    //fileName = "theme_CBC-S.plain";
-    //fileName = "theme_CBC-S.crypt";
 
     // retrieve cipherFile base name.
     std::string baseName = getBaseName(fileName);
@@ -115,7 +103,6 @@ int main()
 
     // hex data
     if (baseName.at(baseName.length() - 1) == 'H') {
-        std::cout << "hex file\n";
 
         cipherFile.open(fileName);
         if (!cipherFile.is_open()) {
@@ -132,7 +119,6 @@ int main()
             std::cout << "Unable to open cipher file.\n";
             return 1;
         }
-        std::cout << "binary file\n";
         
         // determine which type of TEA algorithm to perform
         std::string teaType = baseName.substr(baseName.length() - 5, 3);
@@ -335,20 +321,6 @@ std::string getBaseName(std::string fileName) {
 
     // return substring between backslash and period.
     return fileName.substr(lastSlashIndex, lastPeriodIndex - std::max(lastSlashIndex, lastBackSlashIndex));
-}
-
-unsigned int reverseBits(unsigned int num) {
-    unsigned int  NO_OF_BITS = sizeof(num) * 8;
-    unsigned int reverse_num = 0, i, temp;
-
-    for (i = 0; i < NO_OF_BITS; i++)
-    {
-        temp = (num & (1 << i));
-        if (temp)
-            reverse_num |= (1 << ((NO_OF_BITS - 1) - i));
-    }
-
-    return reverse_num;
 }
 
 std::pair <unsigned int, unsigned int> decrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]) {
