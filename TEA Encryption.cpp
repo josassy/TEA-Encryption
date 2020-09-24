@@ -27,8 +27,8 @@ int main()
 {
     std::ifstream keyFile;
     std::string line;
-    //keyFile.open("teacher-H.key");
-    keyFile.open("theme-H.key");
+    keyFile.open("teacher-H.key");
+    //keyFile.open("theme-H.key");
     if (keyFile.is_open()) {
         getline(keyFile, line);
     }
@@ -42,8 +42,8 @@ int main()
     unsigned int K[KEY_SIZE];
     hexStrToIntArray(line, K, KEY_SIZE);
 
-    //keyFile.open("teacher-H.iv");
-    keyFile.open("theme-H.iv");
+    keyFile.open("teacher-H.iv");
+    //keyFile.open("theme-H.iv");
     if (keyFile.is_open()) {
         getline(keyFile, line);
     }
@@ -78,8 +78,8 @@ int main()
     // read in ciphertext
     std::ifstream cipherFile;
     std::string fileName;
-    //std::cout << "enter filename to " << (encryptMode ? "encrypt" : "decrypt") << ": ";
-    //getline(std::cin, fileName);
+    std::cout << "enter filename to " << (encryptMode ? "encrypt" : "decrypt") << ": ";
+    getline(std::cin, fileName);
     //fileName = "Practice/practice_ECB-H.crypt";
     //fileName = "Practice/practice_ECB-S.crypt";
     //fileName = "Ciphertexts/mystery1_ECB-H.crypt";
@@ -89,7 +89,7 @@ int main()
     //fileName = "Practice/practice_ECB-S.plain";
     //fileName = "mystery3_CBC-S.plain";
     //fileName = "theme_CBC-S.plain";
-    fileName = "theme_CBC-S.crypt";
+    //fileName = "theme_CBC-S.crypt";
 
     // retrieve cipherFile base name.
     std::string baseName = getBaseName(fileName);
