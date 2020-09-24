@@ -7,11 +7,12 @@
 #include <stdlib.h>
 
 const int KEY_SIZE = 4;
+const int IV_SIZE = 2;
 
 void performHexDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]);
 void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]);
-void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]);
-void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]);
+void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV);
+void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV);
 
 void hexStrToIntArray(std::string str, unsigned int K[], int arraySize);
 std::string toHexString(std::pair<unsigned int, unsigned int> data);
@@ -40,6 +41,19 @@ int main()
     unsigned int K[KEY_SIZE];
     hexStrToIntArray(line, K, KEY_SIZE);
 
+    keyFile.open("teacher-H.iv");
+    if (keyFile.is_open()) {
+        getline(keyFile, line);
+    }
+    else {
+        std::cout << "Unable to open IV file.";
+        return 1;
+    }
+    keyFile.close();
+    // split IV into 2 integers
+    unsigned int IV[IV_SIZE];
+    hexStrToIntArray(line, IV, IV_SIZE);
+
     // read in ciphertext
     std::ifstream cipherFile;
     std::string fileName;
@@ -48,7 +62,9 @@ int main()
     //fileName = "Practice/practice_ECB-H.crypt";
     //fileName = "Ciphertexts/mystery1_ECB-H.crypt";
     //fileName = "Practice/practice_ECB-S.crypt";
-    fileName = "Ciphertexts/mystery2_ECB-S.crypt";
+    //fileName = "Ciphertexts/mystery2_ECB-S.crypt";
+    //fileName = "Ciphertexts/mystery3_CBC-S.crypt";
+    fileName = "Ciphertexts/mystery4_CTR-S.crypt";
 
     // retrieve cipherFile base name.
     std::string baseName = getBaseName(fileName);
@@ -93,16 +109,16 @@ int main()
         }
         std::cout << "binary file\n";
         
-        // determine which type of TEA algorithm
+        // determine which type of TEA algorithm to perform
         std::string teaType = baseName.substr(baseName.length() - 5, 3);
         if (teaType == "ECB") {
             performBinaryECBDecrypt(cipherFile, outFile, K);
         }
         else if (teaType == "CBC") {
-            performBinaryCBCDecrypt(cipherFile, outFile, K);
+            performBinaryCBCDecrypt(cipherFile, outFile, K, { IV[0], IV[1] });
         }
         else if (teaType == "CTR") {
-            performBinaryCTRDecrypt(cipherFile, outFile, K);
+            performBinaryCTRDecrypt(cipherFile, outFile, K, { IV[0], IV[1] });
         }
         // invalid. don't try to decrypt.
         else {
@@ -132,17 +148,7 @@ void performHexDecrypt(std::ifstream &cipherFile, std::ostream &outFile, unsigne
             hexStrToIntArray(line.substr(i * 16, 16), cipher, 2);
             // decrypt int pair
             auto decryptedPair = decrypt(cipher[0], cipher[1], K);
-
-            //printf("original:\t");
-            //std::cout << toHexString({ cipher[0], cipher[1] }) << std::endl;
-
-            //printf("decrypted:\t");
-            //std::cout << toHexString(decryptedPair) << std::endl;
             outputLine += toHexString(decryptedPair);
-
-            //auto reencryptedPair = encrypt(decryptedPair.first, decryptedPair.second, K);
-            //printf("re-encrypted:\t");
-            //std::cout << toHexString(reencryptedPair) << std::endl;
         }
         std::cout << outputLine << std::endl;
         outFile << outputLine << std::endl;
@@ -165,8 +171,6 @@ void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
         L = _byteswap_ulong(L);
         R = _byteswap_ulong(R);
 
-        //std::cout << toHexString({ L, R }) << std::endl;
-
         auto decryptedPair = decrypt(L, R, K);
 
         ss << toAsciiString(decryptedPair);
@@ -175,12 +179,79 @@ void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
     outFile << ss.str();
 }
 
-void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE])
-{
+void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV) {
+    std::stringstream ss;
+
+    // use initialization vector for first round additive
+    auto additive = IV;
+
+    while (cipherFile.good()) {
+        unsigned int L = 0;
+        unsigned int R = 0;
+
+        cipherFile.read((char*)&L, sizeof(L));
+        cipherFile.read((char*)&R, sizeof(R));
+
+        // if nothing was read, skip decryption
+        if (L == 0 || R == 0) continue;
+
+        L = _byteswap_ulong(L);
+        R = _byteswap_ulong(R);
+
+        auto decryptedPair = decrypt(L, R, K);
+
+        // apply the additive
+        decryptedPair.first = decryptedPair.first ^ additive.first;
+        decryptedPair.second = decryptedPair.second ^ additive.second;
+
+        // update the additive
+        additive.first = L;
+        additive.second = R;
+
+        ss << toAsciiString(decryptedPair);
+    }
+    std::cout << ss.str();
+    outFile << ss.str();
 }
 
-void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE])
-{
+void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV) {
+    std::stringstream ss;
+
+    // use initialization vector for first round additive
+    auto additive = IV;
+
+    // use 64-bit number for incrementing additive
+    uint64_t additiveCounter = additive.first;
+    additiveCounter = (additiveCounter << 32) ^ additive.second;
+
+    while (cipherFile.good()) {
+        unsigned int L = 0;
+        unsigned int R = 0;
+
+        cipherFile.read((char*)&L, sizeof(L));
+        cipherFile.read((char*)&R, sizeof(R));
+
+        // if nothing was read, skip decryption
+        if (L == 0 || R == 0) continue;
+
+        L = _byteswap_ulong(L);
+        R = _byteswap_ulong(R);
+
+        auto decryptedPair = encrypt(additive.first, additive.second, K);
+
+        // apply the additive
+        decryptedPair.first = decryptedPair.first ^ L;
+        decryptedPair.second = decryptedPair.second ^ R;
+
+        // update the additive
+        additiveCounter++;
+        additive.first = (additiveCounter >> 32) & 0xFFFFFFFF;
+        additive.second = additiveCounter & 0xFFFFFFFF;
+
+        ss << toAsciiString(decryptedPair);
+    }
+    std::cout << ss.str();
+    outFile << ss.str();
 }
 
 void hexStrToIntArray(std::string str, unsigned int K[], int arraySize) {
