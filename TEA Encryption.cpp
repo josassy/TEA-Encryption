@@ -7,39 +7,11 @@ const int KEY_SIZE = 4;
 /**
  * Convert hex string into int array of specified size.
  */
-void hexStrToIntArray(std::string str, unsigned int K[], int arraySize) {
-    for (int i = 0; i < arraySize; i++) {
-        std::string substring = str.substr(i * 8, 8);
-        K[i] = std::stoul(substring, nullptr, 16);
-    }
-}
-
-std::pair <unsigned int, unsigned int> decrypt(int L, int R, unsigned int K[KEY_SIZE]) {
-    int delta = 0x9e3779b9;
-    int sum = delta << 5;
-
-    for (int i = 0; i < 32; i++) {
-        R -= ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3]);
-        L -= ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]);
-        sum -= delta;
-    }
-
-    return std::make_pair(L, R);
-}
-
-std::pair <unsigned int, unsigned int> encrypt(int L, int R, unsigned int K[KEY_SIZE]) {
-    int delta = 0x9e3779b9;
-    int sum = 0;
-
-    for (int i = 0; i < 32; i++) {
-        sum += delta;
-        L += ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]);
-        R += ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3]);
-    }
-
-    return std::make_pair(L, R);
-}
-
+void hexStrToIntArray(std::string str, unsigned int K[], int arraySize);
+void printAsHex(std::pair<unsigned int, unsigned int> data);
+void printAsString(std::pair<unsigned int, unsigned int> data);
+std::pair <unsigned int, unsigned int> decrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]);
+std::pair <unsigned int, unsigned int> encrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]);
 
 /*
 Encryption:
@@ -85,7 +57,6 @@ int main()
         return 1;
     }
     keyFile.close();
-    std::cout << line;
 
     // split 128-bit key into 4 integers
     unsigned int K[KEY_SIZE];
@@ -94,8 +65,10 @@ int main()
     // read in ciphertext
     std::ifstream cipherFile;
     std::string fileName;
-    std::cout << "enter filename to decrypt: ";
-    std::cin >> fileName;
+    //std::cout << "enter filename to decrypt: ";
+    //std::cin >> fileName;
+    //fileName = "Practice/practice_ECB-H.crypt";
+    fileName = "Ciphertexts/mystery1_ECB-H.crypt";
 
     cipherFile.open(fileName);
     if (!cipherFile.is_open()) {
@@ -104,6 +77,11 @@ int main()
     }
 
     // for now, assume that ciphertext is also hex.
+
+    std::pair<unsigned int, unsigned int> test = { 0x68696C6C, 0x20796561 };
+    printAsString(test);
+
+
     while (cipherFile.good()) {
         getline(cipherFile, line);
 
@@ -114,19 +92,78 @@ int main()
             // decrypt int pair
             auto decryptedPair = decrypt(cipher[0], cipher[1], K);
 
+            printf("original:\t");
+            printAsHex({ cipher[0], cipher[1] });
+
             //unsigned int decrypted[2] = { decryptedPair.first, decryptedPair.second };
-            printf("%X", decryptedPair.first);
+            printf("decrypted:\t");
+            printAsHex(decryptedPair);
 
-            printf("%X", decryptedPair.second);
+            for (int j = 0; j < 4; j++) {
+                char c = (decryptedPair.first >> j * 8);
+                std::cout << c << std::endl;
+            }
+            for (int j = 0; j < 4; j++) {
+                char c = (decryptedPair.second >> j * 8);
+                std::cout << c << std::endl;
+            }
 
-            //for (int j = 0; j < 4; j++) {
-            //    char c = (decrypted[0] >> j * 8);
-            //    std::cout << c << std::endl;
-            //}
-            //for (int j = 0; j < 4; j++) {
-            //    char c = (decrypted[1] >> j * 8);
-            //    std::cout << c << std::endl;
-            //}
+            auto reencryptedPair = encrypt(decryptedPair.first, decryptedPair.second, K);
+            printf("re-encrypted:\t");
+            printf("%X", reencryptedPair.first);
+            printf("%X\n", reencryptedPair.second);
         }
     }
+}
+
+void hexStrToIntArray(std::string str, unsigned int K[], int arraySize) {
+    for (int i = 0; i < arraySize; i++) {
+        std::string substring = str.substr(i * 8, 8);
+        K[i] = std::stoul(substring, nullptr, 16);
+    }
+}
+
+void printAsHex(std::pair<unsigned int, unsigned int> data) {
+    printf("%X%X\n", data.first, data.second);
+}
+
+void printAsString(std::pair<unsigned int, unsigned int> data) {
+    std::string outL = "";
+    std::string outR = "";
+    // shift chars 8 bits off at a time
+    for (int j = 0; j < 4; j++) {
+        char c = (data.first >> j * 8) & 0xFF;
+        outL = c + outL;
+    }
+    for (int j = 0; j < 4; j++) {
+        char c = (data.second >> j * 8) & 0xFF;
+        outR = c + outR;
+    }
+    std::cout << outL + outR << std::endl;
+}
+
+std::pair <unsigned int, unsigned int> decrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]) {
+    unsigned int delta = 0x9e3779b9;
+    unsigned int sum = delta << 5;
+
+    for (int i = 0; i < 32; i++) {
+        R -= ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3]);
+        L -= ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]);
+        sum -= delta;
+    }
+
+    return std::make_pair(L, R);
+}
+
+std::pair <unsigned int, unsigned int> encrypt(unsigned int L, unsigned int R, unsigned int K[KEY_SIZE]) {
+    unsigned int delta = 0x9e3779b9;
+    unsigned int sum = 0;
+
+    for (int i = 0; i < 32; i++) {
+        sum += delta;
+        L += ((R << 4) + K[0]) ^ (R + sum) ^ ((R >> 5) + K[1]);
+        R += ((L << 4) + K[2]) ^ (L + sum) ^ ((L >> 5) + K[3]);
+    }
+
+    return std::make_pair(L, R);
 }

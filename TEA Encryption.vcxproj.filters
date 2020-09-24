@@ -66,4 +66,7 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="decrypted.txt" />
+  </ItemGroup>
 </Project>
