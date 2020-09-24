@@ -9,10 +9,10 @@
 const int KEY_SIZE = 4;
 const int IV_SIZE = 2;
 
-void performHexDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]);
-void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]);
-void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV);
-void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV);
+void performHexDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], bool encrypt = false);
+void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], bool encrypt = false);
+void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV, bool encrypt = false);
+void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV, bool encrypt = false);
 
 void hexStrToIntArray(std::string str, unsigned int K[], int arraySize);
 std::string toHexString(std::pair<unsigned int, unsigned int> data);
@@ -50,27 +50,48 @@ int main()
         return 1;
     }
     keyFile.close();
+
     // split IV into 2 integers
     unsigned int IV[IV_SIZE];
     hexStrToIntArray(line, IV, IV_SIZE);
 
+    // display welcome message
+    bool encryptMode = false;
+    printf("Welcome to the TEA encryptor/decryptor.\n");
+    while (true) {
+        printf("Would you like to encrypt or decrypt today? ");
+        std::string userInput;
+        getline(std::cin, userInput);
+        if (toupper(userInput.at(0)) == 'E') {
+            encryptMode = true;
+            break;
+        }
+        else if (toupper(userInput.at(0)) == 'D') {
+            encryptMode = false;
+            break;
+        }
+        printf("Invalid input. Try again with '(E)ncrypt' or '(D)ecrypt'.\n");
+    }
+
     // read in ciphertext
     std::ifstream cipherFile;
     std::string fileName;
-    //std::cout << "enter filename to decrypt: ";
-    //std::cin >> fileName;
+    std::cout << "enter filename to " << (encryptMode ? "encrypt" : "decrypt") << ": ";
+    getline(std::cin, fileName);
     //fileName = "Practice/practice_ECB-H.crypt";
-    //fileName = "Ciphertexts/mystery1_ECB-H.crypt";
     //fileName = "Practice/practice_ECB-S.crypt";
+    //fileName = "Ciphertexts/mystery1_ECB-H.crypt";
     //fileName = "Ciphertexts/mystery2_ECB-S.crypt";
     //fileName = "Ciphertexts/mystery3_CBC-S.crypt";
-    fileName = "Ciphertexts/mystery4_CTR-S.crypt";
+    //fileName = "Ciphertexts/mystery4_CTR-S.crypt";
+    //fileName = "Practice/practice_ECB-S.plain";
+    //fileName = "mystery3_CBC-S.plain";
 
     // retrieve cipherFile base name.
     std::string baseName = getBaseName(fileName);
 
     // choose output file name
-    std::string outFileName = baseName + ".plain";
+    std::string outFileName = baseName + (encryptMode ? ".crypt" : ".plain");
     std::cout << "Select an output filename.\n(To use default " << outFileName << ", hit ENTER): ";
     std::string userFile;
     getline(std::cin, userFile);
@@ -112,13 +133,13 @@ int main()
         // determine which type of TEA algorithm to perform
         std::string teaType = baseName.substr(baseName.length() - 5, 3);
         if (teaType == "ECB") {
-            performBinaryECBDecrypt(cipherFile, outFile, K);
+            performBinaryECBDecrypt(cipherFile, outFile, K, encryptMode);
         }
         else if (teaType == "CBC") {
-            performBinaryCBCDecrypt(cipherFile, outFile, K, { IV[0], IV[1] });
+            performBinaryCBCDecrypt(cipherFile, outFile, K, { IV[0], IV[1] }, encryptMode);
         }
         else if (teaType == "CTR") {
-            performBinaryCTRDecrypt(cipherFile, outFile, K, { IV[0], IV[1] });
+            performBinaryCTRDecrypt(cipherFile, outFile, K, { IV[0], IV[1] }, encryptMode);
         }
         // invalid. don't try to decrypt.
         else {
@@ -137,7 +158,7 @@ int main()
     outFile.close();
 }
 
-void performHexDecrypt(std::ifstream &cipherFile, std::ostream &outFile, unsigned int K[KEY_SIZE]) {
+void performHexDecrypt(std::ifstream &cipherFile, std::ostream &outFile, unsigned int K[KEY_SIZE], bool encryptMode) {
     std::string line;
     while (cipherFile.good()) {
         getline(cipherFile, line);
@@ -147,7 +168,7 @@ void performHexDecrypt(std::ifstream &cipherFile, std::ostream &outFile, unsigne
             // convert substring to int pair
             hexStrToIntArray(line.substr(i * 16, 16), cipher, 2);
             // decrypt int pair
-            auto decryptedPair = decrypt(cipher[0], cipher[1], K);
+            auto decryptedPair = encryptMode ? encrypt(cipher[0], cipher[1], K) : decrypt(cipher[0], cipher[1], K);
             outputLine += toHexString(decryptedPair);
         }
         std::cout << outputLine << std::endl;
@@ -155,7 +176,7 @@ void performHexDecrypt(std::ifstream &cipherFile, std::ostream &outFile, unsigne
     }
 }
 
-void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE]) {
+void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], bool encryptMode) {
     
     std::stringstream ss;
     while (cipherFile.good()) {
@@ -171,7 +192,7 @@ void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
         L = _byteswap_ulong(L);
         R = _byteswap_ulong(R);
 
-        auto decryptedPair = decrypt(L, R, K);
+        auto decryptedPair = encryptMode ? encrypt(L, R, K) : decrypt(L, R, K);
 
         ss << toAsciiString(decryptedPair);
     }
@@ -179,7 +200,7 @@ void performBinaryECBDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
     outFile << ss.str();
 }
 
-void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV) {
+void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV, bool encryptMode) {
     std::stringstream ss;
 
     // use initialization vector for first round additive
@@ -198,11 +219,17 @@ void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
         L = _byteswap_ulong(L);
         R = _byteswap_ulong(R);
 
-        auto decryptedPair = decrypt(L, R, K);
+        std::pair<unsigned int, unsigned int> decryptedPair = { 0, 0 };
+        if (encryptMode) {
+            decryptedPair = decrypt(L ^ additive.first, R ^ additive.second, K);
+        }
+        else {
+            decryptedPair = decrypt(L, R, K);
 
-        // apply the additive
-        decryptedPair.first = decryptedPair.first ^ additive.first;
-        decryptedPair.second = decryptedPair.second ^ additive.second;
+            // apply the additive
+            decryptedPair.first = decryptedPair.first ^ additive.first;
+            decryptedPair.second = decryptedPair.second ^ additive.second;
+        }
 
         // update the additive
         additive.first = L;
@@ -214,7 +241,7 @@ void performBinaryCBCDecrypt(std::ifstream& cipherFile, std::ostream& outFile, u
     outFile << ss.str();
 }
 
-void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV) {
+void performBinaryCTRDecrypt(std::ifstream& cipherFile, std::ostream& outFile, unsigned int K[KEY_SIZE], std::pair<unsigned int, unsigned int> IV, bool encryptMode) {
     std::stringstream ss;
 
     // use initialization vector for first round additive
@@ -289,9 +316,11 @@ std::string getBaseName(std::string fileName) {
     if (std::string::npos == lastSlashIndex) {
         lastSlashIndex = 0;
     }
+    else lastSlashIndex++;
     if (std::string::npos == lastBackSlashIndex) {
         lastBackSlashIndex = 0;
     }
+    else lastBackSlashIndex++;
 
     // Find last occurrence of period.
     size_t lastPeriodIndex = fileName.rfind('.');
@@ -301,7 +330,7 @@ std::string getBaseName(std::string fileName) {
     }
 
     // return substring between backslash and period.
-    return fileName.substr(lastSlashIndex + 1, lastPeriodIndex - std::max(lastSlashIndex, lastBackSlashIndex) - 1);
+    return fileName.substr(lastSlashIndex, lastPeriodIndex - std::max(lastSlashIndex, lastBackSlashIndex));
 }
 
 unsigned int reverseBits(unsigned int num) {

@@ -150,6 +150,10 @@
     <None Include="Help Program Examples\Convert.java" />
     <None Include="Help Program Examples\Overflow.java" />
     <None Include="Help Program Examples\Shift.java" />
+    <None Include="Plaintexts\mystery1_ECB-H.plain" />
+    <None Include="Plaintexts\mystery2_ECB-S.plain" />
+    <None Include="Plaintexts\mystery3_CBC-S.plain" />
+    <None Include="Plaintexts\mystery4_CTR-S.plain" />
     <None Include="Practice\practice_ECB-H.crypt" />
     <None Include="Practice\practice_ECB-H.plain" />
     <None Include="Practice\practice_ECB-S.crypt" />

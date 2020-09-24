@@ -65,5 +65,9 @@
     <None Include="Help Program Examples\Shift.java">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Plaintexts\mystery1_ECB-H.plain" />
+    <None Include="Plaintexts\mystery2_ECB-S.plain" />
+    <None Include="Plaintexts\mystery3_CBC-S.plain" />
+    <None Include="Plaintexts\mystery4_CTR-S.plain" />
   </ItemGroup>
 </Project>
